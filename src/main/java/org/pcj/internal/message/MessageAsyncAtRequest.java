@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -76,18 +76,19 @@ final public class MessageAsyncAtRequest<T> extends Message {
         NodeData nodeData = InternalPCJ.getNodeData();
         int globalThreadId = nodeData.getGroupById(groupId).getGlobalThreadId(threadId);
         PcjThread pcjThread = nodeData.getPcjThread(globalThreadId);
-        pcjThread.execute(() -> {
+	final Runnable runnable = () -> {
             MessageAsyncAtResponse messageAsyncAtResponse;
             try {
                 Object returnedValue = asyncTask.call();
                 messageAsyncAtResponse = new MessageAsyncAtResponse(
-                        groupId, requestNum, requesterThreadId, returnedValue);
+		    groupId, requestNum, requesterThreadId, returnedValue);
             } catch (Exception ex) {
                 messageAsyncAtResponse = new MessageAsyncAtResponse(
-                        groupId, requestNum, requesterThreadId, null);
+		    groupId, requestNum, requesterThreadId, null);
                 messageAsyncAtResponse.setException(ex);
             }
             InternalPCJ.getNetworker().send(sender, messageAsyncAtResponse);
-        });
+        };
+        pcjThread.execute(runnable);
     }
 }

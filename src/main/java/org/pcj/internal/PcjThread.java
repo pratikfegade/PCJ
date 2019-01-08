@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -11,7 +11,6 @@ package org.pcj.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,12 +55,10 @@ public class PcjThread extends Thread {
             }
         };
 
-        this.asyncTasksWorkers = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+        this.asyncTasksWorkers = new ScalingThreadPoolExecutor(0, Integer.MAX_VALUE,
                 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(),
-                threadFactory
+	        threadFactory
         );
-
     }
 
     private static class PcjThreadGroup extends ThreadGroup {
@@ -171,5 +168,6 @@ public class PcjThread extends Thread {
 
     public void execute(Runnable runnable) {
         asyncTasksWorkers.execute(runnable);
+	ThreadPoolExecutor tpe = (ThreadPoolExecutor) asyncTasksWorkers;
     }
 }
