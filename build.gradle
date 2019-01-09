@@ -71,6 +71,16 @@ task snapshotBuild {
     snapshotBuild.dependsOn(jar, javadocJar, sourcesJar)
 }
 
+task interfaceJar(type: Jar, dependsOn: compileJava) {
+    from sourceSets.main.output.classesDirs
+    include 'org/pcj/*.class'
+    classifier = 'interface'
+}
+
+assemble {
+    dependsOn interfaceJar
+}
+
 task releaseBuild {
     outputs.upToDateWhen { false }
     releaseBuild.dependsOn(clean, build, javadocJar, sourcesJar)
