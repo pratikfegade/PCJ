@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -13,6 +13,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+
+import java.io.ByteArrayInputStream;
+import org.nustaq.serialization.FSTObjectOutput;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutputNoShared;
+
 /**
  *
  * @author Marek Nowicki (faramir@mat.umk.pl)
@@ -20,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 public class MessageDataOutputStream extends OutputStream {
 
     private final OutputStream output;
-    private ObjectOutputStream objectOutputStream;
+    private FSTObjectOutput fstObjectOutput;
 
     public MessageDataOutputStream(OutputStream output) {
         this.output = output;
@@ -43,7 +49,13 @@ public class MessageDataOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
-        output.close();
+	// System.out.println("Closing " + System.identityHashCode(this));
+	if (fstObjectOutput != null) {
+	    fstObjectOutput.close();
+	}
+        else {
+	    output.close();
+	}
     }
 
     private byte[] intToBytes(int value) {
@@ -164,10 +176,9 @@ public class MessageDataOutputStream extends OutputStream {
     }
 
     public void writeObject(Object object) throws IOException {
-        if (objectOutputStream == null) {
-            objectOutputStream = new ObjectOutputStream(output);
+        if (fstObjectOutput == null) {
+            fstObjectOutput = new FSTObjectOutput(output);
         }
-        objectOutputStream.writeUnshared(object);
-//        objectOutputStream.writeObject(object);
+        fstObjectOutput.writeObject(object);
     }
 }

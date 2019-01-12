@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -81,7 +81,8 @@ public class MessageBytesOutputStream implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        messageOutputStream.close();
+        messageDataOutputStream.close();
+        // messageOutputStream.close();
         byteBufferArray = new ByteBufferArray(messageOutputStream.queue.stream().toArray(ByteBuffer[]::new));
 
     }

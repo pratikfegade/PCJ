@@ -130,5 +130,4 @@ public class NodeInfo implements Serializable {
         }
         out.writeInt(-1);
     }
-
 }

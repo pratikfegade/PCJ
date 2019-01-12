@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectInputNoShared;
+
 /**
  *
  * @author Marek Nowicki (faramir@mat.umk.pl)
@@ -20,11 +23,11 @@ import java.nio.charset.StandardCharsets;
 public class MessageDataInputStream extends InputStream {
 
     final private InputStream input;
-    private ObjectInputStream objectInputStream;
+    private FSTObjectInput fstObjectInput;
 
     public MessageDataInputStream(InputStream input) {
         this.input = input;
-        this.objectInputStream = null;
+        this.fstObjectInput = null;
     }
 
     @Override
@@ -44,10 +47,12 @@ public class MessageDataInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        if (objectInputStream != null) {
-            objectInputStream.close();
+        if (fstObjectInput != null) {
+            fstObjectInput.close();
         }
-        input.close();
+        else {
+	    input.close();
+	}
     }
 
     private int bytesToInt(byte[] bytes) {
@@ -177,10 +182,12 @@ public class MessageDataInputStream extends InputStream {
     }
 
     public Object readObject() throws IOException, ClassNotFoundException {
-        if (objectInputStream == null) {
-            objectInputStream = new ObjectInputStream(input);
+        if (fstObjectInput == null) {
+            fstObjectInput = new FSTObjectInput(input);
         }
-//        return objectInputStream.readObject();
-        return objectInputStream.readUnshared();
+//        return fstObjectInput.readObject();
+        Object object = fstObjectInput.readObject();
+	// fstObjectInput.close();
+	return object;
     }
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -92,6 +92,8 @@ public class LoopbackMessageBytesStream implements AutoCloseable {
 
         @Override
         public void close() throws IOException {
+	    // System.err.println(System.identityHashCode(this));
+	    // (new IllegalArgumentException()).printStackTrace();
             if (currentByteBuffer.position() > 0) {
                 flush(0);
             }

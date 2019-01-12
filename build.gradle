@@ -24,11 +24,15 @@ ext.versionNumber = "5.1"
 ext.buildNumber = "unknown"
 
 repositories {
-    //    mavenCentral()
+    mavenCentral()
+    flatDir {
+	dirs 'lib'
+    }
 }
 
 dependencies {
-    //    testCompile 'junit:junit:4.11'
+    // testCompile 'junit:junit:4.11'}
+    implementation 'de.ruedigermoeller:fst:2.57'
 }
 
 compileJava {
@@ -161,7 +165,6 @@ jar {
         attributes(['Sealed': false], 'org/pcj/')
     }
 }
-
 
 publishing {
     publications {

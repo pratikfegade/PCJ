@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -54,6 +54,7 @@ final public class MessageHelloInform extends Message {
     public void write(MessageDataOutputStream out) throws IOException {
         out.writeInt(physicalId);
         out.writeObject(nodeInfoByPhysicalId);
+	// System.out.println("Writing map to " + System.identityHashCode(out));
     }
 
     @Override

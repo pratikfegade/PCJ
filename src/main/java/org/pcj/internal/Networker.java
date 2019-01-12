@@ -127,16 +127,19 @@ final public class Networker {
     public void send(SocketChannel socket, Message message) {
         try {
             if (socket instanceof LoopbackSocketChannel) {
-                // LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message);
-                // loopbackMessageBytesStream.writeMessage();
-                // loopbackMessageBytesStream.close();
+		if (message.getType() != MessageType.ASYNC_AT_REQUEST && message.getType() != MessageType.ASYNC_AT_RESPONSE) {
+		    LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message);
+		    loopbackMessageBytesStream.writeMessage();
+		    loopbackMessageBytesStream.close();
 
-                // if (LOGGER.isLoggable(Level.FINEST)) {
-                    // LOGGER.log(Level.FINEST, "Locally processing message {0}", message.getType());
-                // }
-                // workers.submit(new WorkerTask(socket, message, loopbackMessageBytesStream.getMessageDataInputStream()));
-
-                workers.submit(new LocalWorkerTask(socket, message));
+		    if (LOGGER.isLoggable(Level.FINEST)) {
+			LOGGER.log(Level.FINEST, "Locally processing message {0}", message.getType());
+		    }
+		    workers.submit(new WorkerTask(socket, message, loopbackMessageBytesStream.getMessageDataInputStream()));
+		}
+		else {
+		    workers.submit(new LocalWorkerTask(socket, message));
+		}
             } else {
 		numRemote.incrementAndGet();
                 MessageBytesOutputStream objectBytes = new MessageBytesOutputStream(message);
