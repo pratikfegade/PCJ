@@ -91,4 +91,25 @@ final public class MessageAsyncAtRequest<T> extends Message {
         };
         pcjThread.execute(runnable);
     }
+
+    @Override
+    public void executeLocal(SocketChannel sender) throws IOException {
+        NodeData nodeData = InternalPCJ.getNodeData();
+        int globalThreadId = nodeData.getGroupById(groupId).getGlobalThreadId(threadId);
+        PcjThread pcjThread = nodeData.getPcjThread(globalThreadId);
+	final Runnable runnable = () -> {
+            MessageAsyncAtResponse messageAsyncAtResponse;
+            try {
+                Object returnedValue = asyncTask.call();
+                messageAsyncAtResponse = new MessageAsyncAtResponse(
+		    groupId, requestNum, requesterThreadId, returnedValue);
+            } catch (Exception ex) {
+                messageAsyncAtResponse = new MessageAsyncAtResponse(
+		    groupId, requestNum, requesterThreadId, null);
+                messageAsyncAtResponse.setException(ex);
+            }
+            InternalPCJ.getNetworker().send(sender, messageAsyncAtResponse);
+        };
+        pcjThread.execute(runnable);
+    }
 }

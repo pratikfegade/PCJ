@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -44,6 +44,15 @@ final public class Networker {
     private final SelectorProc selectorProc;
     private final Thread selectorProcThread;
     private final ExecutorService workers;
+    private static AtomicInteger numRemote = new AtomicInteger();
+
+    static {
+	Runtime.getRuntime().addShutdownHook(new Thread() {
+		public void run() {
+		    System.out.println("Number of remote messages " + numRemote.get());
+		}
+	    });
+    }
 
     protected Networker(int minWorkerCount, int maxWorkerCount) {
         LOGGER.log(Level.FINE, "Networker with {0,number,#}-{1,number,#} {1,choice,1#worker|1<workers}",
@@ -118,15 +127,18 @@ final public class Networker {
     public void send(SocketChannel socket, Message message) {
         try {
             if (socket instanceof LoopbackSocketChannel) {
-                LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message);
-                loopbackMessageBytesStream.writeMessage();
-                loopbackMessageBytesStream.close();
+                // LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(message);
+                // loopbackMessageBytesStream.writeMessage();
+                // loopbackMessageBytesStream.close();
 
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "Locally processing message {0}", message.getType());
-                }
-                workers.submit(new WorkerTask(socket, message, loopbackMessageBytesStream.getMessageDataInputStream()));
+                // if (LOGGER.isLoggable(Level.FINEST)) {
+                    // LOGGER.log(Level.FINEST, "Locally processing message {0}", message.getType());
+                // }
+                // workers.submit(new WorkerTask(socket, message, loopbackMessageBytesStream.getMessageDataInputStream()));
+
+                workers.submit(new LocalWorkerTask(socket, message));
             } else {
+		numRemote.incrementAndGet();
                 MessageBytesOutputStream objectBytes = new MessageBytesOutputStream(message);
                 objectBytes.writeMessage();
                 objectBytes.close();
@@ -158,8 +170,27 @@ final public class Networker {
         workers.submit(new WorkerTask(socket, message, messageDataInputStream));
     }
 
-    private static class WorkerTask implements Runnable {
+    private static class LocalWorkerTask implements Runnable {
+        private final SocketChannel socket;
+        private final Message message;
 
+        public LocalWorkerTask(SocketChannel socket, Message message) {
+            this.socket = socket;
+            this.message = message;
+        }
+
+        @Override
+        public void run() {
+            try {
+                message.executeLocal(socket);
+            } catch (Throwable t) {
+                LOGGER.log(Level.SEVERE, "Exception while processing message " + message
+                        + " by node(" + InternalPCJ.getNodeData().getPhysicalId() + ").", t);
+            }
+        }
+    }
+
+    private static class WorkerTask implements Runnable {
         private final SocketChannel socket;
         private final Message message;
         private final MessageDataInputStream messageDataInputStream;

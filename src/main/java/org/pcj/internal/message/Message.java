@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -14,6 +14,7 @@ import java.nio.channels.SocketChannel;
 import java.util.logging.Logger;
 import org.pcj.internal.network.MessageDataInputStream;
 import org.pcj.internal.network.MessageDataOutputStream;
+import org.pcj.internal.network.LoopbackMessageBytesStream;
 
 /**
  * Abstract class for storing messages, containing base
@@ -52,4 +53,12 @@ abstract public class Message implements Serializable {
     public abstract void write(MessageDataOutputStream out) throws IOException;
 
     public abstract void execute(SocketChannel sender, MessageDataInputStream in) throws IOException;
+
+    public void executeLocal(SocketChannel sender) throws IOException {
+	LoopbackMessageBytesStream loopbackMessageBytesStream = new LoopbackMessageBytesStream(this);
+	loopbackMessageBytesStream.writeMessage();
+	loopbackMessageBytesStream.close();
+
+	execute(sender, loopbackMessageBytesStream.getMessageDataInputStream());
+    }
 }

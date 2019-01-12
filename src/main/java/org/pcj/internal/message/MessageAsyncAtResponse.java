@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011-2016, PCJ Library, Marek Nowicki
  * All rights reserved.
  *
@@ -81,6 +81,28 @@ class MessageAsyncAtResponse extends Message {
                 asyncAtExecution.signalDone(variableValue);
             } else {
                 exception = (Exception) in.readObject();
+                asyncAtExecution.signalException(exception);
+            }
+        } catch (Exception ex) {
+            asyncAtExecution.signalException(ex);
+        }
+    }
+
+    @Override
+    public void executeLocal(SocketChannel sender) throws IOException {
+        NodeData nodeData = InternalPCJ.getNodeData();
+
+        int globalThreadId = nodeData.getGroupById(groupId).getGlobalThreadId(requesterThreadId);
+
+        PcjThread pcjThread = nodeData.getPcjThread(globalThreadId);
+        InternalGroup group = (InternalGroup) pcjThread.getThreadData().getGroupById(groupId);
+
+        AsyncAtExecution asyncAtExecution = group.removeAsyncAtExecution(requestNum);
+
+        try {
+            if (exception == null) {
+                asyncAtExecution.signalDone(variableValue);
+            } else {
                 asyncAtExecution.signalException(exception);
             }
         } catch (Exception ex) {

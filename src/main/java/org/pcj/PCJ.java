@@ -471,4 +471,8 @@ final public class PCJ extends InternalPCJ {
         int myThreadId = getGlobalGroup().myId();
         return (Group) InternalPCJ.join(myThreadId, name);
     }
+
+    // public int getNumRemoteMessages() {
+    // 	return getNetworker().numRemote.get();
+    // }
 }

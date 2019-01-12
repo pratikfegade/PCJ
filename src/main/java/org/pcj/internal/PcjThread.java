@@ -55,8 +55,8 @@ public class PcjThread extends Thread {
             }
         };
 
-        this.asyncTasksWorkers = new ScalingThreadPoolExecutor(0, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
+        this.asyncTasksWorkers = new ScalingThreadPoolExecutor(2, Integer.MAX_VALUE,
+                120L, TimeUnit.SECONDS,
 	        threadFactory
         );
     }
@@ -168,6 +168,5 @@ public class PcjThread extends Thread {
 
     public void execute(Runnable runnable) {
         asyncTasksWorkers.execute(runnable);
-	ThreadPoolExecutor tpe = (ThreadPoolExecutor) asyncTasksWorkers;
     }
 }
